@@ -26,6 +26,44 @@ app.controller('AppCtrl', function($scope) {
     text: "Select an Option"
   };
 
+  $scope.ddMultiSelectOptions = [
+    {
+      text: 'Label',
+      divider: true
+    }, {
+      text: 'Option1',
+      value: 'one',
+      iconCls: 'someicon'
+    }, {
+      text: 'Option2',
+      someprop: 'somevalue'
+    }, {
+      text: 'Option3',
+      someprop: 'somevalue'
+    }, {
+      text: 'Option4',
+      someprop: 'somevalue'
+    }, {
+      text: 'Option5',
+      someprop: 'somevalue'
+    }, {
+      divider: true
+    }, {
+      text: 'Option4',
+      href: 'http://www.google.com'
+    }
+  ];
+
+  $scope.ddMultiSelectSelected = [
+    {
+      text: 'Option2',
+      someprop: 'somevalue'
+    }, {
+      text: 'Option5',
+      someprop: 'somevalue'
+    }
+  ];
+
   $scope.ddMenuOptions = [
     {
       text: 'Label',

@@ -97,7 +97,8 @@
   border: none;
 }
 
-.wrap-dd-select .dropdown li:hover a {
+.wrap-dd-select .dropdown li:hover a,
+.wrap-dd-select .dropdown li.selected a {
   background: #f3f8f8;
 }
 
