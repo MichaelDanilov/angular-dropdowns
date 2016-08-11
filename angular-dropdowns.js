@@ -34,6 +34,35 @@
       '</li>'
     ].join(''));
 
+    $templateCache.put('ngDropdowns/templates/dropdownMultiSelect.html', [
+      '<div ng-class="{\'disabled\': dropdownDisabled}" class="wrap-dd-select" tabindex="0">',
+      '<span class="selected">',
+      '  <span ng-repeat="item in dropdownModel">{{item[labelField]}}<span ng-if="!$last">, </span></span>',
+      '</span>',
+      '<ul class="dropdown">',
+      '<li ng-repeat="(key, item) in dropdownMultiSelect"',
+      ' class="dropdown-item"',
+      ' dropdown-multi-select-item="item"',
+      ' dropdown-item-label="labelField">',
+      '</li>',
+      '</ul>',
+      '</div>'
+    ].join(''));
+
+    $templateCache.put('ngDropdowns/templates/dropdownMultiSelectItem.html', [
+      '<li ng-class="{divider: (dropdownMultiSelectItem.divider && !dropdownMultiSelectItem[dropdownItemLabel]), \'divider-label\': (dropdownMultiSelectItem.divider && dropdownMultiSelectItem[dropdownItemLabel]), selected: $parent.selectedItems[$parent.key]}">',
+      '<a href="" class="dropdown-item"',
+      ' ng-if="!dropdownMultiSelectItem.divider"',
+      ' ng-href="{{dropdownMultiSelectItem.href}}"',
+      ' ng-click="selectItem()">',
+      '{{dropdownMultiSelectItem[dropdownItemLabel]}}',
+      '</a>',
+      '<span ng-if="dropdownMultiSelectItem.divider">',
+      '{{dropdownMultiSelectItem[dropdownItemLabel]}}',
+      '</span>',
+      '</li>'
+    ].join(''));
+
     $templateCache.put('ngDropdowns/templates/dropdownMenu.html', [
       '<ul class="dropdown">',
       '<li ng-repeat="item in dropdownMenu"',
@@ -127,6 +156,100 @@
         },
 
         templateUrl: 'ngDropdowns/templates/dropdownSelectItem.html'
+      };
+    }
+  ]);
+
+  dd.directive('dropdownMultiSelect', ['DropdownService',
+    function (DropdownService) {
+      return {
+        restrict: 'A',
+        replace: true,
+        scope: {
+          dropdownMultiSelect: '=',
+          dropdownModel: '=',
+          dropdownItemLabel: '@',
+          dropdownOnchange: '&',
+          dropdownDisabled: '='
+        },
+
+        controller: ['$scope', '$element', function ($scope, $element) {
+          $scope.labelField = $scope.dropdownItemLabel || 'text';
+
+          $scope.selectedItems = [];
+          $scope.dropdownMultiSelect.forEach(function (item, index) {
+            $scope.selectedItems[index] = false;
+            $scope.dropdownModel.forEach(function (selected) {
+              if (angular.equals(selected, item)) {
+                $scope.selectedItems[index] = true;
+              }
+            });
+          });
+
+          DropdownService.register($element);
+
+          this.select = function (selected) {
+            if (angular.isArray($scope.dropdownModel) && $scope.dropdownModel.length > 0) {
+              var exist = -1;
+              $scope.dropdownModel.forEach(function (item, index) {
+                if (angular.equals(item, selected)) {
+                  exist = index;
+                }
+              });
+              if (exist > -1) {
+                $scope.dropdownModel.splice(exist, 1);
+                $scope.selectedItems[$scope.dropdownMultiSelect.indexOf(selected)] = false;
+              } else {
+                $scope.dropdownModel.push(selected);
+                $scope.selectedItems[$scope.dropdownMultiSelect.indexOf(selected)] = true;
+              }
+            } else {
+              $scope.dropdownModel = [];
+              $scope.dropdownModel.push(selected);
+              $scope.selectedItems[$scope.dropdownMultiSelect.indexOf(selected)] = true;
+            }
+            $scope.dropdownOnchange({
+              selected: selected
+            });
+            $element[0].blur(); //trigger blur to clear active
+          };
+
+          $element.bind('click', function (event) {
+            event.stopPropagation();
+            if (!$scope.dropdownDisabled) {
+              DropdownService.toggleActive($element);
+            }
+          });
+
+          $scope.$on('$destroy', function () {
+            DropdownService.unregister($element);
+          });
+        }],
+        templateUrl: 'ngDropdowns/templates/dropdownMultiSelect.html'
+      };
+    }
+  ]);
+
+  dd.directive('dropdownMultiSelectItem', [
+    function () {
+      return {
+        require: '^dropdownMultiSelect',
+        replace: true,
+        scope: {
+          dropdownItemLabel: '=',
+          dropdownMultiSelectItem: '='
+        },
+
+        link: function (scope, element, attrs, dropdownMultiSelectCtrl) {
+          scope.selectItem = function () {
+            if (scope.dropdownMultiSelectItem.href) {
+              return;
+            }
+            dropdownMultiSelectCtrl.select(scope.dropdownMultiSelectItem);
+          };
+        },
+
+        templateUrl: 'ngDropdowns/templates/dropdownMultiSelectItem.html'
       };
     }
   ]);
